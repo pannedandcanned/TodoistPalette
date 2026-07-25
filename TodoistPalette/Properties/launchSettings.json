@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "TodoistPalette (Package)": {
+      "commandName": "MsixPackage",
+      "doNotLaunchApp": true
+    },
+    "TodoistPalette (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
