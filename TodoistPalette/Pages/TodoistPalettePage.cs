@@ -9,36 +9,30 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using TodoistPalette.Services;
 using Windows.Media.Protection.PlayReady;
 
 namespace TodoistPalette
 {
     internal sealed partial class TodoistPalettePage : ListPage
     {
-        private const string AUTH_TOKEN = "<YOUR_AUTH_TOKEN>";
+        //temp for testing, will implement actual thing tmmrw
+        private const string AUTH_TOKEN = "";
 
-        private static readonly HttpClient client = CreateHttpClient();
+        private readonly ApiAuthService _authService = new ApiAuthService(AUTH_TOKEN);
 
-        private static HttpClient CreateHttpClient()
-        {
-            var c = new HttpClient();
-            c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AUTH_TOKEN);
-            return c;
-        }
-
-        private static async Task Sync()
+        private async Task TestConnection()
         {
             try
             {
-                using HttpResponseMessage response = client.Get("https://api.todoist.com/api/v1/sync");
-                response.EnsureSuccessStatusCode();
-                string responseBody = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine(responseBody);
+                using var client = _authService.CreateAuthenticatedClient();
+                using HttpResponseMessage response = await client.GetAsync("https://api.todoist.com/api/v1/sync");
+                string result = response.IsSuccessStatusCode? $"Connection OK : {(int)response.StatusCode}": $"Connection failed : {(int)response.StatusCode}";
+                Debug.WriteLine(result);
             }
-            catch (HttpRequestException e)
+            catch (Exception e)
             {
-                Debug.Write("\nException Caught!");
-                Debug.Write("Message :{0} ", e.Message);
+                Debug.WriteLine($"Connection exception: {e.Message}");
             }
         }
 
@@ -51,11 +45,9 @@ namespace TodoistPalette
 
         public override IListItem[] GetItems()
         {
-            var sync = Task.Run(Sync);
-            var command = new OpenUrlCommand("https://learn.microsoft.com/windows/powertoys/command-palette/adding-commands");
             return new IListItem[]
             {
-                new ListItem(sync) {Title = "Sync" }
+                new ListItem(new AnonymousCommand(() => { Task.Run(TestConnection); }) { Result = CommandResult.Dismiss() }) { Title = "Test Connection" }
             };
         }
     }
