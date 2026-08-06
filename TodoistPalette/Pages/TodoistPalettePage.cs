@@ -48,8 +48,8 @@ namespace TodoistPalette
                 var content = new FormUrlEncodedContent(data); 
                 using HttpResponseMessage response = await client.PostAsync("https://api.todoist.com/api/v1/sync", content);
                 string httpResult = response.IsSuccessStatusCode? $"Connection OK : {(int)response.StatusCode}": $"Connection failed : {(int)response.StatusCode}";
-                result = response.ToString();
-                return httpResult; 
+                result = await response.Content.ReadAsStringAsync();
+                return result;
             }
             catch (Exception e)
             {
@@ -96,10 +96,9 @@ namespace TodoistPalette
             else
             {
                 // just need it for testing will implement proper async routine
-                var syncResult = Task.Run(async () => await TestConnection()).GetAwaiter().GetResult();
                 return new IListItem[]
                 {
-                    new ListItem(new ConfirmationPage(syncResult)) {Title = "Results?"},
+                    new ListItem(new ResponsePage(TestConnection().GetAwaiter().GetResult())) {Title = "Results?"}, 
                     new ListItem(new AnonymousCommand(() => _secretStore.DeleteApiKey()) { Result = CommandResult.Confirm(confirmArgs) }) {Title = "Reset API Key"}
                 };
             }

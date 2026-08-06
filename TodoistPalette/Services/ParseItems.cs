@@ -4,8 +4,8 @@ using System.Text;
 
 namespace TodoistPalette.Services
 {
-    internal class ParseItems
+    internal class ParseSyncResponse
     {
-
+        //public ParseSyncResponse(HttpResponseMessage item)
     }
 }

@@ -8,11 +8,11 @@ using Windows.ApplicationModel.Email;
 
 namespace TodoistPalette.Pages
 {
-    internal sealed partial class ConfirmationPage : ContentPage
+    internal sealed partial class ResponsePage : ContentPage
     {
         public string? body; 
 
-        public ConfirmationPage(string bodyInput = null)
+        public ResponsePage(string bodyInput = null)
         {
             Icon = new("\uE8A5");
             Title = "API Response";
