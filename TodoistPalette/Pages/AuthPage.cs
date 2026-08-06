@@ -108,7 +108,7 @@ public sealed partial class ApiKeyPage : ContentPage
             }
             else
             {
-                return CommandResult.ShowToast($"Connection failed : {(int)response.StatusCode}");
+                CommandResult.ShowToast($"Connection failed : {(int)response.StatusCode}");
                 return CommandResult.GoBack();
             }
             #endregion

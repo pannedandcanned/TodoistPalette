@@ -37,6 +37,7 @@ namespace TodoistPalette
         }
         private async Task<string> TestConnection()
         {
+            HttpResponseMessage? response = null;
             try
             {
                 using var client = _authService.CreateAuthClient(); //need to change so that client is saved and reused to avoid crowding ports
@@ -45,16 +46,25 @@ namespace TodoistPalette
                     new KeyValuePair<string, string>("sync_token", "*"),
                     new KeyValuePair<string, string>("resource_types", """["all"]""")
                 };
-                var content = new FormUrlEncodedContent(data); 
-                using HttpResponseMessage response = await client.PostAsync("https://api.todoist.com/api/v1/sync", content);
-                string httpResult = response.IsSuccessStatusCode? $"Connection OK : {(int)response.StatusCode}": $"Connection failed : {(int)response.StatusCode}";
+                var content = new FormUrlEncodedContent(data);
+                response = await client.PostAsync("https://api.todoist.com/api/v1/sync", content);
+                response.EnsureSuccessStatusCode();
                 result = await response.Content.ReadAsStringAsync();
                 return result;
             }
-            catch (Exception e)
+            catch (HttpRequestException h)
             {
-                result = $"Connection exception: {e.Message}";
-                return result; 
+                CommandResult.ShowToast($"Connection failed : {h.Message}");
+                return $"Problem with server connection, please try again. \n HTTP Response: {h.Message}";
+            }
+            catch (Exception)
+            {
+                return $"Unknown error, please try again."; //need to include more error handling cases
+            }
+            finally
+            {
+                if(response != null)
+                    response.Dispose();
             }
         }
 
@@ -85,6 +95,7 @@ namespace TodoistPalette
                 Description = "Are you want to delete your key? This will effectively log you out.",
             };
             #endregion
+            #region API Auth
             if (!_secretStore.HasApiKey())
             {
                 // need to implement proper startup page
@@ -95,13 +106,21 @@ namespace TodoistPalette
             }
             else
             {
-                // just need it for testing will implement proper async routine
+                // Call the sync API and build a ListItem for each returned task
+                var json = TestConnection().GetAwaiter().GetResult();
+                var taskItems = ListItemFactory.CreateFromSyncJson(json);
+
+                // Add a final item for resetting the API key
+                var list = new List<IListItem>(taskItems.Length + 1);
+                list.AddRange(taskItems);
+                list.Add(new ListItem(new AnonymousCommand(() => _secretStore.DeleteApiKey()) { Result = CommandResult.Confirm(confirmArgs) }) {Title = "Reset API Key"});
                 return new IListItem[]
                 {
-                    new ListItem(new ResponsePage(TestConnection().GetAwaiter().GetResult())) {Title = "Results?"}, 
-                    new ListItem(new AnonymousCommand(() => _secretStore.DeleteApiKey()) { Result = CommandResult.Confirm(confirmArgs) }) {Title = "Reset API Key"}
+                    list.ToArray()
                 };
             }
+            #endregion
+
         }
     }
 }
