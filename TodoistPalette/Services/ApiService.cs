@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 
 namespace TodoistPalette.Services
 {
-
+    /// <summary>
+    /// Class for accessing API.
+    /// </summary>
     internal sealed class ApiService
     {
         private string _accessToken;
@@ -18,6 +20,8 @@ namespace TodoistPalette.Services
         {
             _accessToken = initialToken;
         }
+
+
 
         public void SetToken(string token)
         {
@@ -39,5 +43,26 @@ namespace TodoistPalette.Services
 
             return client;
         }
+
+        #region StatusCheck
+        /// <summary>
+        /// Status of token, need to implement connectivity checks for better troubleshooting
+        /// </summary>
+        public enum ApiStatus
+        {
+            Ready,
+            NeedsConfiguration,
+            Error
+        }
+        public ApiStatus GetStatus()
+        {
+            if (string.IsNullOrEmpty(_accessToken))
+            {
+                return ApiStatus.NeedsConfiguration;
+            }
+
+            return ApiStatus.Ready;
+        }
+        #endregion
     }
 }

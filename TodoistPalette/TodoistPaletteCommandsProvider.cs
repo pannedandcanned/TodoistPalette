@@ -13,7 +13,7 @@ public partial class TodoistPaletteCommandsProvider : CommandProvider
 
     public TodoistPaletteCommandsProvider()
     {
-        DisplayName = "TodoistPalette";
+        DisplayName = "Command Palette for Todoist";
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
         _commands = [
             new CommandItem(new TodoistPalettePage()) { Title = DisplayName },
