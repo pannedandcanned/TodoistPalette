@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using TodoistPalette.Services;
+using System.Diagnostics;
 
 namespace TodoistPalette.Pages
 {
@@ -35,6 +36,7 @@ namespace TodoistPalette.Pages
                     var page = new TaskViewPage(task);
                     var li = new ListItem(page) { Title = task.content ?? "(No title)" };
                     result.Add(li);
+                    Debug.Print(task.content);
                 }
 
                 return result.ToArray();

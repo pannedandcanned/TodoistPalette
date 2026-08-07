@@ -49,6 +49,7 @@ namespace TodoistPalette
                 var content = new FormUrlEncodedContent(data);
                 response = await client.PostAsync("https://api.todoist.com/api/v1/sync", content);
                 response.EnsureSuccessStatusCode();
+                if (response.StatusCode.ToString != 200) throw HttpRequestException(response.StatusCode.ToString());
                 result = await response.Content.ReadAsStringAsync();
                 return result;
             }
@@ -99,25 +100,34 @@ namespace TodoistPalette
             if (!_secretStore.HasApiKey())
             {
                 // need to implement proper startup page
-                return new IListItem[]
+                 return new IListItem[]
                 {
                     new ListItem(new ApiKeyPage()) {Title = "Authenticate to get Data"},
                 };
             }
             else
             {
+                Debug.WriteLine("Beginning ListItems!");
                 // Call the sync API and build a ListItem for each returned task
-                var json = TestConnection().GetAwaiter().GetResult();
-                var taskItems = ListItemFactory.CreateFromSyncJson(json);
+                IListItem[] taskItems = null;
+                try
+                {
+                    var json = TestConnection().GetAwaiter().GetResult();
+                    taskItems = ListItemFactory.CreateFromSyncJson(json);
+                    Debug.WriteLine(taskItems);
+                }
+                catch (HttpRequestException h)
+                {
+                    ToastStatusMessage t = new($"HTTP Error: {h.Message}");
+                    Debug.WriteLine(h.Message);
+                    t.Show();
+                } 
 
                 // Add a final item for resetting the API key
                 var list = new List<IListItem>(taskItems.Length + 1);
                 list.AddRange(taskItems);
                 list.Add(new ListItem(new AnonymousCommand(() => _secretStore.DeleteApiKey()) { Result = CommandResult.Confirm(confirmArgs) }) {Title = "Reset API Key"});
-                return new IListItem[]
-                {
-                    list.ToArray()
-                };
+                return list.ToArray();
             }
             #endregion
 
