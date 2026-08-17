@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using TodoistPalette.Services;
 using Windows.Media.Capture.Core;
+using System.Threading;
 
 
 public sealed partial class ApiKeyPage : ContentPage
@@ -105,7 +106,7 @@ public sealed partial class ApiKeyPage : ContentPage
                 CommandResult.ShowToast($"Connection OK : Status Code {(int)response.StatusCode}");
                 SaveKey(key);
                 return CommandResult.GoBack();
-            }
+            } 
             else
             {
                 CommandResult.ShowToast($"Connection failed : {(int)response.StatusCode}");

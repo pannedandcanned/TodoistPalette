@@ -49,7 +49,6 @@ namespace TodoistPalette
                 var content = new FormUrlEncodedContent(data);
                 response = await client.PostAsync("https://api.todoist.com/api/v1/sync", content);
                 response.EnsureSuccessStatusCode();
-                if (response.StatusCode.ToString != 200) throw HttpRequestException(response.StatusCode.ToString());
                 result = await response.Content.ReadAsStringAsync();
                 return result;
             }
@@ -119,9 +118,23 @@ namespace TodoistPalette
                 catch (HttpRequestException h)
                 {
                     ToastStatusMessage t = new($"HTTP Error: {h.Message}");
-                    Debug.WriteLine(h.Message);
+                    Debug.WriteLine("TPP HTTPS Respnse" + h.Message);
                     t.Show();
+                    return new IListItem[]
+                    {
+                        new ListItem() {Title = "No Data Found."},
+                    };
                 } 
+                catch (Exception e)
+                {
+                    ToastStatusMessage t = new($"Error: {e.Message}");
+                    Debug.WriteLine("TPP Respnse" + e.Message);
+                    t.Show();
+                    return new IListItem[]
+                    {
+                        new ListItem() {Title = "No Data Found."},
+                    };
+                }
 
                 // Add a final item for resetting the API key
                 var list = new List<IListItem>(taskItems.Length + 1);

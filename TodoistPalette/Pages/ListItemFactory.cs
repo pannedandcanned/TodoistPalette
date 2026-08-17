@@ -41,9 +41,14 @@ namespace TodoistPalette.Pages
 
                 return result.ToArray();
             }
-
-            catch (Exception)
+            catch (JsonException jex)
             {
+                Debug.WriteLine($"Failed to parse sync JSON: {jex.Message}");
+                return Array.Empty<IListItem>();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Factory Error: " + e.Message);
                 return Array.Empty<IListItem>();
             }
         }
